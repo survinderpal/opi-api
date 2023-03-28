@@ -1,0 +1,163 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2022 Dell Inc, or its subsidiaries.
+
+syntax = "proto3";
+package opi_api.storage.v1;
+
+option java_package = "opi_api.storage.v1";
+option java_multiple_files = true;
+option java_outer_classname = "BackendNvmeTcpProto";
+
+option go_package = "github.com/opiproject/opi-api/storage/v1alpha1/gen/go";
+
+import "google/api/client.proto";
+import "google/api/resource.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+
+import "object_key.proto";
+import "opicommon.proto";
+
+// Back End (network-facing) APIs. NVMe/TCP and NVMe/RoCEv2 protocols are covered by this service.
+service NVMfRemoteControllerService {
+    rpc CreateNVMfRemoteController (CreateNVMfRemoteControllerRequest) returns (NVMfRemoteController) {
+        option (google.api.http) = {
+            post: "/v1/{parent=subsystems}"
+            body: "nv_mf_remote_controller"
+        };
+        option (google.api.method_signature) = "parent,nv_mf_remote_controller,nv_mf_remote_controller_id";
+    }
+    rpc DeleteNVMfRemoteController (DeleteNVMfRemoteControllerRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/{name=subsystems}/{subsystem}"
+        };
+        option (google.api.method_signature) = "name";
+    }
+    rpc UpdateNVMfRemoteController (UpdateNVMfRemoteControllerRequest) returns (NVMfRemoteController) {
+        option (google.api.http) = {
+            patch: "/v1/{nv_mf_remote_controller.name=subsystems}"
+            body: "nv_mf_remote_controller"
+        };
+        option (google.api.method_signature) = "nv_mf_remote_controller,update_mask";
+    }
+    rpc ListNVMfRemoteControllers   (ListNVMfRemoteControllersRequest)   returns (ListNVMfRemoteControllersResponse)   {
+        option (google.api.http) = {
+            get: "/v1/{parent=subsystems}"
+        };
+        option (google.api.method_signature) = "parent";
+    }
+    rpc GetNVMfRemoteController    (GetNVMfRemoteControllerRequest)    returns (NVMfRemoteController)    {
+        option (google.api.http) = {
+            get: "/v1/{name=subsystems}/{subsystem}"
+        };
+        option (google.api.method_signature) = "name";
+    }
+    rpc NVMfRemoteControllerReset (NVMfRemoteControllerResetRequest) returns (google.protobuf.Empty) {}
+    rpc NVMfRemoteControllerStats  (NVMfRemoteControllerStatsRequest)  returns (NVMfRemoteControllerStatsResponse)  {}
+}
+
+message NVMfRemoteController {
+    // object's unique identifier
+    common.v1.ObjectKey id = 1;
+
+    NvmeTransportType trtype = 2;
+    NvmeAddressFamily adrfam = 3;
+    string traddr = 4;
+    int64 trsvcid = 5;
+    string subnqn = 6;
+    bool hdgst = 7;
+    bool ddgst = 8;
+    NvmeMultipath multipath = 9;
+    int64 io_queues_count = 10;
+    int64 queue_size = 11;
+    string hostnqn = 12;
+}
+
+message CreateNVMfRemoteControllerRequest {
+    string parent = 1 [
+        (google.api.field_behavior) = REQUIRED,
+        (google.api.resource_reference).type = "opi_api.storage.v1/NVMfRemoteController"
+    ];
+    NVMfRemoteController nv_mf_remote_controller = 2 [(google.api.field_behavior) = REQUIRED];
+    string nv_mf_remote_controller_id = 3;
+}
+
+message DeleteNVMfRemoteControllerRequest {
+    // object's unique identifier
+    string name = 1 [
+        (google.api.field_behavior) = REQUIRED,
+        (google.api.resource_reference).type = "opi_api.storage.v1/NVMfRemoteController"
+    ];
+    // If set to true, and the resource is not found, the request will succeed
+    // but no action will be taken on the server
+    bool allow_missing = 2;
+}
+
+message UpdateNVMfRemoteControllerRequest {
+    NVMfRemoteController nv_mf_remote_controller = 1;
+    // The list of fields to update.
+    google.protobuf.FieldMask update_mask = 2;
+}
+
+message ListNVMfRemoteControllersRequest {
+    string parent = 1 [
+        (google.api.field_behavior) = REQUIRED,
+        (google.api.resource_reference).type = "opi_api.storage.v1/NVMfRemoteController"
+    ];
+    int32 page_size = 2;
+    string page_token = 3;
+}
+
+message ListNVMfRemoteControllersResponse {
+    repeated NVMfRemoteController nv_mf_remote_controllers = 1;
+    string next_page_token = 2;
+}
+
+message GetNVMfRemoteControllerRequest {
+    // object's unique identifier
+    string name = 1 [
+        (google.api.field_behavior) = REQUIRED,
+        (google.api.resource_reference).type = "opi_api.storage.v1/NVMfRemoteController"
+    ];
+}
+
+message NVMfRemoteControllerResetRequest {
+    // object's unique identifier
+    common.v1.ObjectKey id = 1;
+}
+
+message NVMfRemoteControllerStatsRequest {
+    // object's unique identifier
+    common.v1.ObjectKey id = 1;
+}
+
+message NVMfRemoteControllerStatsResponse {
+    VolumeStats stats = 1;
+}
+
+enum NvmeTransportType {
+    NVME_TRANSPORT_TYPE_UNSPECIFIED = 0;
+    NVME_TRANSPORT_FC               = 1;
+    NVME_TRANSPORT_PCIE             = 2;
+    NVME_TRANSPORT_RDMA             = 3;
+    NVME_TRANSPORT_TCP              = 4;
+    NVME_TRANSPORT_CUSTOM           = 5;
+}
+
+enum NvmeAddressFamily {
+    NVME_ADDRESS_FAMILY_UNSPECIFIED = 0;
+    NVMF_ADRFAM_IPV4                = 1;
+    NVMF_ADRFAM_IPV6                = 2;
+    NVMF_ADRFAM_IB                  = 3;
+    NVMF_ADRFAM_FC                  = 4;
+    NVMF_ADRFAM_INTRA_HOST          = 5;
+}
+
+enum NvmeMultipath {
+    NVME_MULTIPATH_UNSPECIFIED = 0;
+    NVME_MULTIPATH_DISABLE     = 1;
+    NVME_MULTIPATH_FAILOVER    = 2;
+    NVME_MULTIPATH_MULTIPATH   = 3;
+}

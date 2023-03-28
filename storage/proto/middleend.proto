@@ -1,7 +1,0 @@
-syntax = "proto3";
-package opi.storage.v1;
-option go_package = "github.com/opiproject/opi-api/storage/proto";
-
-// Middle End (Storage Services) APIs.
-
-// TODO: encryption, compression, raid, QoS, multipath, ...

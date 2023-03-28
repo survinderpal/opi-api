@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2022 Dell Inc, or its subsidiaries.
+// {C} Copyright 2022 Pensando Systems Inc. All rights reserved
+
+syntax = "proto3";
+package opi_api.storage.v1;
+
+option java_package = "opi_api.storage.v1";
+option java_multiple_files = true;
+option java_outer_classname = "MiddleendProto";
+
+option go_package = "github.com/opiproject/opi-api/storage/v1alpha1/gen/go";
+import "opicommon.proto";
+import "object_key.proto";
+
+import "google/api/client.proto";
+import "google/api/resource.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+
+// Middle End (Storage Services) APIs. For example, encryption, compression, raid, QoS, multipath, ...
+service MiddleendService {
+    rpc CreateEncryptedVolume (CreateEncryptedVolumeRequest) returns (EncryptedVolume) {
+        option (google.api.http) = {
+            post: "/v1/{parent=subsystems}"
+            body: "encrypted_volume"
+        };
+        option (google.api.method_signature) = "parent,encrypted_volume,encrypted_volume_id";
+    }
+    rpc DeleteEncryptedVolume (DeleteEncryptedVolumeRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/{name=volumes}/{volume}"
+        };
+        option (google.api.method_signature) = "name";
+    }
+    rpc UpdateEncryptedVolume (UpdateEncryptedVolumeRequest) returns (EncryptedVolume) {
+        option (google.api.http) = {
+            patch: "/v1/{encrypted_volume.name=subsystems}"
+            body: "encrypted_volume"
+        };
+        option (google.api.method_signature) = "encrypted_volume,update_mask";
+    }
+    rpc ListEncryptedVolumes   (ListEncryptedVolumesRequest)   returns (ListEncryptedVolumesResponse)   {
+        option (google.api.http) = {
+            get: "/v1/{parent=volumes}"
+        };
+        option (google.api.method_signature) = "parent";
+    }
+    rpc GetEncryptedVolume    (GetEncryptedVolumeRequest)    returns (EncryptedVolume)    {
+        option (google.api.http) = {
+            get: "/v1/{name=subsystems}/{volume}"
+        };
+        option (google.api.method_signature) = "name";
+    }
+    rpc EncryptedVolumeStats  (EncryptedVolumeStatsRequest)  returns (EncryptedVolumeStatsResponse)  {}
+}
+
+message EncryptedVolume {
+    common.v1.ObjectKey encrypted_volume_id = 1;
+
+    // The back/middle-end volume to back this volume
+    common.v1.ObjectKey volume_id = 2;
+
+    // Key to be used for encryption
+    bytes key = 3;
+
+    // Cipher to use
+    EncryptionType cipher = 4;
+
+}
+
+message CreateEncryptedVolumeRequest {
+    string parent = 1 [
+        (google.api.field_behavior) = REQUIRED,
+        (google.api.resource_reference).type = "opi_api.storage.v1/EncryptedVolume"
+    ];
+    EncryptedVolume encrypted_volume = 2 [(google.api.field_behavior) = REQUIRED];
+    string encrypted_volume_id = 3;
+}
+
+message DeleteEncryptedVolumeRequest {
+    string name = 1 [
+        (google.api.field_behavior) = REQUIRED,
+        (google.api.resource_reference).type = "opi_api.storage.v1/EncryptedVolume"
+    ];
+    // If set to true, and the resource is not found, the request will succeed
+    // but no action will be taken on the server
+    bool allow_missing = 2;
+}
+
+message UpdateEncryptedVolumeRequest {
+    EncryptedVolume encrypted_volume = 1;
+    // The list of fields to update.
+    google.protobuf.FieldMask update_mask = 2;
+}
+
+message ListEncryptedVolumesRequest {
+    string parent = 1 [
+        (google.api.field_behavior) = REQUIRED,
+        (google.api.resource_reference).type = "opi_api.storage.v1/EncryptedVolume"
+    ];
+    int32 page_size = 2;
+    string page_token = 3;
+}
+
+message ListEncryptedVolumesResponse {
+    repeated EncryptedVolume encrypted_volumes = 1;
+    string next_page_token = 2;
+}
+
+message GetEncryptedVolumeRequest {
+    string name = 1 [
+        (google.api.field_behavior) = REQUIRED,
+        (google.api.resource_reference).type = "opi_api.storage.v1/EncryptedVolume"
+    ];
+}
+
+message EncryptedVolumeStatsRequest {
+    common.v1.ObjectKey encrypted_volume_id = 1;
+}
+
+message EncryptedVolumeStatsResponse {
+    common.v1.ObjectKey encrypted_volume_id = 1;
+    VolumeStats stats = 2;
+}

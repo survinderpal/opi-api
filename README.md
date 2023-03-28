@@ -1,8 +1,9 @@
 # OPI API and Behavioral Model Group
 
-[![MarkdownLint](https://github.com/opiproject/opi-api/actions/workflows/markdown.yml/badge.svg)](https://github.com/opiproject/opi-api/actions/workflows/markdown.yml)
+[![Linters](https://github.com/opiproject/opi-api/actions/workflows/linters.yml/badge.svg)](https://github.com/opiproject/opi-api/actions/workflows/linters.yml)
 [![OPI Storage API CI](https://github.com/opiproject/opi-api/actions/workflows/storage.yml/badge.svg)](https://github.com/opiproject/opi-api/actions/workflows/storage.yml)
 [![OPI Security API CI](https://github.com/opiproject/opi-api/actions/workflows/security.yml/badge.svg)](https://github.com/opiproject/opi-api/actions/workflows/security.yml)
+[![OPI Network API CI](https://github.com/opiproject/opi-api/actions/workflows/network.yml/badge.svg)](https://github.com/opiproject/opi-api/actions/workflows/network.yml)
 
 ## Overview
 
@@ -25,13 +26,30 @@ OPI subgroup dealing with APIs.  The focus of the subgroup is:
   - [AI/ML](aiml/README.md)
   - others
 - Define recommended industry APIs to be used.
-  - Examples (OVS DB, OpenConfig, VPP)
+  - For Example in Networking there are (OVS DB, OpenConfig, VPP, etc.)
 - Identify gaps in APIs and recommend extensions for those capabilities
 - Create/Define the Backend/Southbound facing interface APIs
 - Produce protocol buffer (protobuf) definitions.
 - Produce reference orchestration client to support testing of the API.
 
 The API subgroup does not want to re-invent any industry standard APIs that already exist.  Standard APIs such as OVS DB, OpenConfig, VPP, etc. that are used for configuration of service capabilities will be reviewed and examined for gaps.  Gaps in capabilities will be addressed either by defining extensions to existing APIs or new APIs will need to be defined (such as Storage APIs).
+
+## OPI API Boundary
+
+The OPI API boundary for the configuration/control interface will end at the protobuf as shown in the diagram below.
+
+![Config API Boundary](doc/images/Config-API-Boundary.png)
+
+The use of gRPC is the preferred mechanism for the config/control interface, with the protobuf containing the information to be used by the underlying shim.  This allows for implementations to provide:
+
+- A mechanism where the gRPC can setup separate control flows for REST/OVS or other specific traffic mechanisms
+- The use of an API Gateway that can
+  - Utilize gRPC messages and deliver to the appropriate shim
+  - Provide a gRPC to REST translation
+  - Support gNMI and gNOI traffic over the gRPC
+  ![API Gateway](doc/images/API-GW-Layers.png)
+
+The OPI API boundary for the consumption interface will provide the exposed VF/PF capabilities to be used by the Host platform and/or the compute cores on the xPU.
 
 ---
 
@@ -43,6 +61,8 @@ The API subgroup does not want to re-invent any industry standard APIs that alre
   - [open-api-subgroup](https://opi-project.slack.com/archives/C0344KMEAKB)
 - Status
   - Active
+- Agenda
+  - [Topics](Agenda.md)
 
 ## I Want To Contribute
 

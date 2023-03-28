@@ -1,0 +1,133 @@
+// Copyright (c) 2023 Pensando, AMD Inc, or its subsidiaries.
+// device's network configuration
+
+syntax = "proto3";
+package opi_api.network.cloud.v1alpha1;
+
+option java_package = "opi_api.network.cloud.v1alpha1";
+option java_multiple_files = true;
+option java_outer_classname = "DeviceProto";
+
+option go_package = "github.com/opiproject/opi-api/network/cloud/v1alpha1/gen/go";
+
+import "object_key.proto";
+import "networktypes.proto";
+
+import "google/protobuf/timestamp.proto";
+
+// device capabilities indicate the capabilities of software/hardware
+// as exposed by current firmware of the device. This can help cloud controller
+// to adapt to the underlying xPU capabilities/feature
+message DeviceCapabilities {
+  // traffic routing capabilities
+  DeviceCapabilitiesDynamicRouting routing_capabilties = 1;
+  // network security policy capabilities
+  DeviceCapabilitiesNetworkPolicy network_policy_capabilities = 2;
+}
+
+// device capabilities for dynamic routing
+message DeviceCapabilitiesDynamicRouting {
+  // device is capable of doing bgp routing for the underlay
+  bool underlay_bgp = 1;
+}
+
+// device capabilities for network security policies
+message DeviceCapabilitiesNetworkPolicy {
+  // compact routes: capability for the datapath to do summarized route lookups vs flat flow lookups (default)
+  bool compact_rules = 1;
+}
+
+// device level network configuration and status
+message Device {
+  // device's network configuration
+  DeviceSpec spec = 1;
+  // device's network status
+  DeviceStatus status = 2;
+}
+
+// device's network configuration
+message DeviceSpec {
+  // object's unique identifier
+  common.v1.ObjectKey id = 1;
+
+  // underlay ipv4 address for tunnel initiation/termination
+  network.opinetcommon.v1alpha1.IPAddress ipv4_address = 2;
+  // underlay ipv6 address for tunnel initiation/termination
+  network.opinetcommon.v1alpha1.IPAddress ipv6_address = 3;
+  // device's mac address - for outer ethernet header
+  bytes mac_addr = 4;
+  // IP address of the underlay gateway in the underlay
+  network.opinetcommon.v1alpha1.IPAddress gateway_ip = 5;
+  // number and type of pcie functions exposed
+  PCIeFunctionsSpec pcie_functions = 6;
+  // ovelay routing
+  bool overlay_routing_enabled = 7; 
+  // system name is used as named identifier in protocols (e.g. LLDP)
+  string systemname = 8;
+  // management network details
+  MgmtNetworkSpec mgmt_network_spec = 9;
+}
+
+// PCIe functions to be configured on the device
+message PCIeFunctionsSpec {
+  // number of physical functions
+  int32 pf_count = 5;
+  // number of virtual functions
+  int32 vf_count = 6;
+}
+
+// MgmtNetworkSpec captures all the management network related parameters
+message MgmtNetworkSpec {
+  // LLDPMgmtIP, if configured, will be used to advertise in LLDP's management address TLV
+  network.opinetcommon.v1alpha1.IPAddress lldp_mgmt_ip = 1;
+  // MgmtIP is the management IP address of the DSC (also for flow log generation)
+  network.opinetcommon.v1alpha1.IPAddress mgmt_ip = 2;
+  // Vlan ID (0-4095) is the management network's vlan tag (zero = untagged)
+  int32 vlan = 3;
+  // IP address of the default gateway in the management vlan
+  network.opinetcommon.v1alpha1.IPAddress gateway_ip = 4;
+  // MAC address of the default gateway in the management vlan
+  bytes gateway_mac = 5;
+}
+
+// device's network status
+message DeviceStatus {
+  // device description
+  string description = 1;
+  // system MAC address (unique for a device in cluster)
+  bytes system_mac_address = 2;
+  // vendor identifier
+  string vendor_id = 3;
+  // chip type
+  string chip_type = 4;
+  // OS version
+  string os_version = 5;
+  // number of PCIe ports
+  int32 pcie_port_count = 6;
+  // Number of uplink ports
+  int32 port_count = 7;
+  // number of host interfaces
+  int32 host_if_count = 8;
+  // Network DataPath Program Name
+  string pipeline = 9;
+  // critical network events at device level
+  repeated SystemEvent critical_events = 10;
+  // active network alerts at device level
+  repeated SystemAlert alerts = 11;
+}
+
+// system events happened during device operations
+message SystemEvent {
+  // event timestamp
+  google.protobuf.Timestamp event_time  = 1;
+  // name of the event
+  string                    event_description = 2;
+}
+
+// critical alerts effecting the health of the system
+message SystemAlert {
+  // alert timestamp
+  google.protobuf.Timestamp alert_time  = 1;
+  // name of the alert
+  string                    alert_description = 2;
+}

@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2022 Dell Inc, or its subsidiaries.
+// {C} Copyright 2022 Pensando Systems Inc. All rights reserved
+
+syntax = "proto3";
+package opi_api.storage.v1;
+
+option java_package = "opi_api.storage.v1";
+option java_multiple_files = true;
+option java_outer_classname = "OpiCommonProto";
+
+option go_package = "github.com/opiproject/opi-api/storage/v1alpha1/gen/go";
+
+// Many front-ends expose PCI devices to the host. This represents that endpoint.
+// This device will ultimately be surfaced by the operating system at some
+// Bus:Device:Function, but note that the values set here are not necessarily
+// the same values that the operating system will choose. Instead, these are
+// xPU-internal values.
+// While the term "device" is often used for the entity attached to a PCI slot,
+// we'll use the term "port" which also commonly used with PCI switches and avoids
+// confusion with storage "devices".
+message PciEndpoint {
+    // The "port" or "device". In other words, the connector/cable that's
+    // plugged into a particular host. This number may end up matching
+    // the host-assigned "device" value in the bus:device:function identifier,
+    // but it does not strictly have to and that should not be relied upon.
+    int32 port_id = 1;
+
+    // Physical function index. This may end up matching the host-assigned
+    // "function" value in the bus:device:function identifier, but it does not
+    // strictly have to and that should not be relied upon.
+    int32 physical_function = 2;
+
+    // Virtual function index. This may end up matching the host-assigned
+    // "function" value in the bus:device:function identifier, but it does not
+    // strictly have to and that should not be relied upon.
+    int32 virtual_function = 3;
+}
+
+message VolumeStats {
+    int32    read_bytes_count       = 1;
+    int32    read_ops_count         = 2;
+    int32    write_bytes_count      = 3;
+    int32    write_ops_count        = 4;
+    int32    unmap_bytes_count      = 5;
+    int32    unmap_ops_count        = 6;
+    int32    read_latency_ticks     = 7;
+    int32    write_latency_ticks    = 8;
+    int32    unmap_latency_ticks    = 9;
+}
+
+// AES encryption types
+enum EncryptionType {
+    ENCRYPTION_TYPE_UNSPECIFIED = 0;
+    ENCRYPTION_TYPE_AES_CBC_128 = 1;
+    ENCRYPTION_TYPE_AES_CBC_192 = 2;
+    ENCRYPTION_TYPE_AES_CBC_256 = 3;
+    ENCRYPTION_TYPE_AES_XTS_128 = 4;
+    ENCRYPTION_TYPE_AES_XTS_192 = 5;
+    ENCRYPTION_TYPE_AES_XTS_256 = 6;
+}

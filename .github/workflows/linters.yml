@@ -1,0 +1,31 @@
+name: Linters
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  markdown-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: docker run -v $PWD:/workdir ghcr.io/igorshubovych/markdownlint-cli:latest --ignore "**/autogen.md" --disable=MD013 "**/*.md"
+
+  api-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install api-linter tool
+        run: |
+          go install github.com/googleapis/api-linter/cmd/api-linter@latest
+      - name: Run linter
+        run: |
+          echo '::echo::on'
+          for f in **/proto; do pushd $f && $HOME/go/bin/api-linter *.proto --output-format summary && popd ; done
+          echo '::echo::off'
+
